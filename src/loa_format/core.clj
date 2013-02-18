@@ -51,6 +51,9 @@
    :color    (xml1-> card-xml :color text)
    :pow      (xml1-> card-xml :pow text)
    :tgh      (xml1-> card-xml :tgh text)
+   :hand     (xml1-> card-xml :hand text)
+   :life     (xml1-> card-xml :life text)
+   :loyalty  (xml1-> card-xml :loyalty text)
    :typelist (xml-> card-xml :typelist :type format-type)
    :rulelist (xml-> card-xml :rulelist :rule format-rule)
    :multi (when-let [multi-xml (xml1-> card-xml :multi)]
@@ -129,13 +132,22 @@
             :reminder (combine-rule-text (map :reminder combo))}))
        (partition-by :no rules)))
 
-(defn- str-rules [rules]
-  (->> (combine-rules rules)
-       (map (fn [{:keys [text reminder]}]
-              (apply str text (when-not (empty? reminder)
-                                (str (when text " ")
-                                     "(" reminder ")")))))
-       (apply unlines)))
+(defn- str-rules [card]
+  (let [planeswalker? (some #{"Planeswalker"}
+                            (map :name (:typelist card)))
+        lines
+        (->> (combine-rules (:rulelist card))
+             (map (fn [{:keys [text reminder]}]
+                    (apply str text (when-not (empty? reminder)
+                                      (str (when-not (empty? text) " ")
+                                           "(" reminder ")"))))))]
+    (apply unlines
+           (if planeswalker?
+             (->> lines
+                  (map #(re-matches #"([+-]\d+): (.*)" %))
+                  (map (fn [[_ cost rule]]
+                         (format "[%s] %s" cost rule))))
+             lines))))
 
 (defn- str-typeline [types]
   (let [[pre post] (split-with #(#{"super" "card"} (:type %))
@@ -154,8 +166,11 @@
            (str-typeline (:typelist card))
            (when (:pow card)
              (format "%s/%s" (:pow card) (:tgh card)))
+           (when (:hand card)
+             (format "Hand %s, life %s" (:hand card) (:life card)))
+           (:loyalty card)
            (when-not (empty? (:rulelist card))
-             (str-rules (:rulelist card)))))
+             (str-rules card))))
 
 (defn- get-set-rarity
   [card setinfo meta]
