@@ -152,8 +152,9 @@
 (defn- str-typeline [types]
   (let [[pre post] (split-with #(#{"super" "card"} (:type %))
                                types)
-        pre (clojure.string/join " " (map :name pre))
-        post (clojure.string/join " " (map :name post))]
+        fix #(->> % (map :name) (clojure.string/join " ") to-ascii)
+        pre (fix pre)
+        post (fix post)]
     (if (empty? post)
       pre
       (str pre " - " post))))
