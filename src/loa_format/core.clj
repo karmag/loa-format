@@ -144,7 +144,7 @@
     (apply unlines
            (if planeswalker?
              (->> lines
-                  (map #(or (re-matches #"([+-]?\d+): (.*)" %) [nil nil %]))
+                  (map #(or (re-matches #"([+-]?[\dX]+): (.*)" %) [nil nil %]))
                   (map (fn [[_ cost rule]]
                          (if cost
                            (format "[%s] %s" cost rule)
