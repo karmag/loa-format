@@ -26,7 +26,8 @@
     \u00fb "u"
     \u2014 "-"
     \u2018 "'"
-    \u2019 "'"}))
+    \u2019 "'"
+    \u2212 "-"}))
 
 (defn- capitalize [string]
   (when-not (empty? string)
